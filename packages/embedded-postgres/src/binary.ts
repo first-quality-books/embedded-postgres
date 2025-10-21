@@ -63,7 +63,8 @@ export default async function (): Promise<PostgresBinaries> {
     );
     if (isRunningInElectron) {
         const isAsarPackaged =
-      isRunningInElectron && require.main?.filename.indexOf('app.asar') === -1;
+            isRunningInElectron &&
+            process.mainModule?.filename.indexOf('app.asar') === -1;
 
         if (!isAsarPackaged) {
             return rawBinaries;

@@ -1,11 +1,11 @@
 {
-  "name": "embedded-postgres",
+  "name": "@first-quality-books/embedded-postgres",
   "version": "17.6.0-beta.15",
   "description": "A package to run an embedded Postgresql database right from NodeJS",
   "exports": "./dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/leinelissen/embedded-postgres"
+    "url": "https://github.com/first-quality-books/embedded-postgres"
   },
   "type": "module",
   "scripts": {
@@ -46,7 +46,8 @@
     "pg": "^8.7.3"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "files": [
     "/dist/**/*",
