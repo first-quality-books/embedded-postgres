@@ -202,10 +202,21 @@ class EmbeddedPostgres {
             ], { ...permissionIds, env: { LC_MESSAGES: LC_MESSAGES_LOCALE } });
 
             // Connect to stderr, as that is where the messages get sent
-            this.process.stderr?.on('data', (chunk: Buffer) => {
+            this.process.stdout?.on('data', (chunk: Buffer) => {
                 // Parse the data as a string and log it
                 const message = chunk.toString('utf-8');
                 this.options.onLog(message); 
+
+                // GUARD: Check for the right message to determine server start
+                if (message.includes('database system is ready to accept connections')) {
+                    resolve();
+                }
+            });
+
+            this.process.stderr?.on('data', (chunk: Buffer) => {
+                // Parse the data as a string and log it
+                const message = chunk.toString('utf-8');
+                this.options.onError(message); 
 
                 // GUARD: Check for the right message to determine server start
                 if (message.includes('database system is ready to accept connections')) {
