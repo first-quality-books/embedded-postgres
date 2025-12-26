@@ -405,4 +405,5 @@ async function gracefulShutdown(done: () => void) {
 // Register graceful shutdown function
 AsyncExitHook(gracefulShutdown);
 
+export type { PostgresOptions };
 export default EmbeddedPostgres;
