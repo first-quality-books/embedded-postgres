@@ -1,5 +1,5 @@
 {
-  "name": "embedded-postgres",
+  "name": "@first-quality-books/embedded-postgres",
   "version": "17.7.0-beta.15",
   "description": "A package to run an embedded Postgresql database right from NodeJS",
   "exports": {
