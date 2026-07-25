@@ -22,6 +22,14 @@
 npm i embedded-postgres
 ```
 
+> [!IMPORTANT]
+> Embedded Postgres requires post-install scripts to function. If you have those
+> disabled (such as when using PNPM), please approve build scripts manually (in
+> this case by running `pnpm approve-builds`)
+
+We require a post-install script to generate symlinks that Postgres requires for
+operation. This is necessary since [NPM doesn't supports symlinks in their tarballs](https://github.com/npm/cli/issues/6746).
+
 <br />
 
 ## Usage
@@ -72,10 +80,10 @@ Additionally, we track the binaries that are created upstream in [zonky's
 embedded-postgres-binaries](https://github.com/zonkyio/embedded-postgres). This
 leads to the following current support matrix:
 
-| Platform / Architecture   | 13.21.0 | 14.18.0 | 15.13.0 | 16.9.0 | 17.5.0 |
+| Platform / Architecture   | 14.23.0 | 15.18.0 | 16.14.0 | 17.10.0 | 18.4.0 |
 |---------------------------|---------|---------|---------|--------|--------|
 | 🍎 Darwin / x64           | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 🍎 Darwin / arm64[[1]](https://github.com/zonkyio/embedded-postgres/issues/86#issuecomment-1120425822) | 🚫 | 🚫 | ✅ | ✅ | ✅ |
+| 🍎 Darwin / arm64[[1]](https://github.com/zonkyio/embedded-postgres/issues/86#issuecomment-1120425822) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 🪟 Windows / x64          | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 🐧 Linux / x64            | ✅ | ✅ | ✅ | ✅ | ✅ |
 | 🐧 Linux / arm            | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -178,11 +186,10 @@ system for usage by your script.
 
 ## Credits and Licensing
 Embedded Postgres was created by Lei Nelissen for [BMD
-Studio](https://bmd.studio). It is currently maintained by [Studio Falkland](https://falkland.studio) The package is based on [zonky's
+Studio](https://bmd.studio). It is currently maintained by [Studio Falkland](https://falkland.studio). The package is based on [zonky's
 embedded-postgres-binaries](https://github.com/zonkyio/embedded-postgres). 
 
-The
-binaries are made available under the Apache License 2.0, whereas the specific
+The binaries are made available under the Apache License 2.0, whereas the specific
 code in this package is made available under the MIT license.
 
 <p float="left">

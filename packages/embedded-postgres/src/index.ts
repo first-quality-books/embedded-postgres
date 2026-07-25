@@ -2,7 +2,7 @@ import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import { platform, tmpdir, userInfo } from 'os';
-import { ChildProcess, spawn, exec } from 'child_process';
+import { ChildProcess, spawn, exec, execSync } from 'child_process';
 
 import pg from 'pg';
 import AsyncExitHook from 'async-exit-hook';
@@ -19,7 +19,26 @@ const { Client } = pg;
  * for a particular string, we need to force that string into the right locale.
  * @see https://github.com/leinelissen/embedded-postgres/issues/15
  */
-const LC_MESSAGES_LOCALE = 'en_US.UTF-8';
+function getBestLocale(): string {
+    // `locale -a` is not available on Windows.
+    if (platform() === 'win32') {
+        return 'C';
+    }
+    try {
+        const availableLocales = new Set(
+            execSync('locale -a', { encoding: 'utf-8' })
+                .split(/\r?\n/)
+                .map((locale) => locale.trim())
+                .filter(Boolean)
+        );
+        if (availableLocales.has('en_US.UTF-8')) return 'en_US.UTF-8';
+        if (availableLocales.has('C.UTF-8')) return 'C.UTF-8';
+        if (availableLocales.has('en_US.utf8')) return 'en_US.utf8';
+    } catch {
+        // Fallback to POSIX C locale
+    }
+    return 'C';
+}
 
 /**
  * Previosuly, options were specified in snake_case rather than camelCase. Old
@@ -43,6 +62,20 @@ const defaults: PostgresOptions = {
     createPostgresUser: false,
     onLog: console.log,
     onError: console.error,
+};
+
+// Fixes the mode of files that are supposed to be executable
+//                        r-xr-xr-x
+const BIN_PERMISSIONS = 0b101101101;
+const ensureBinIsExecutable = async (filePath: string) => {
+    // Only fix the file's mode if it's missing a permission. This is useful
+    // when the binaries are in a read-only file system, as a call to chmod
+    // (even unnecessary) would cause a crash.
+    const stat = await fs.stat(filePath);
+
+    if ((stat.mode & BIN_PERMISSIONS) !== BIN_PERMISSIONS) {
+        await fs.chmod(filePath, stat.mode | BIN_PERMISSIONS);
+    }
 };
 
 /**
@@ -90,6 +123,7 @@ class EmbeddedPostgres {
      */
     async initialise() {
         const { postgres, initdb } = await bin;
+        const locale = getBestLocale();
 
         // GUARD: Check that a postgres user is available 
         await this.checkForRootUser();
@@ -133,45 +167,53 @@ class EmbeddedPostgres {
         const passwordFile = path.resolve(tmpdir(), `pg-password-${randomId}`);
         await fs.writeFile(passwordFile, this.options.password + '\n');
 
-        // Greedily make the file executable, in case it is not
-        await fs.chmod(postgres, '755');
-        await fs.chmod(initdb, '755');
+        // Make the files executable, in case they are not
+        ensureBinIsExecutable(postgres);
+        ensureBinIsExecutable(initdb);
 
         // Initialize the database
-        await new Promise<void>((resolve, reject) => {
-            const process = spawn(initdb, [
-                `--pgdata=${this.options.databaseDir}`,
-                `--auth=${this.options.authMethod}`,
-                `--username=${this.options.user}`,
-                `--pwfile=${passwordFile}`,
-                `--lc-messages=${LC_MESSAGES_LOCALE}`,
-                ...this.options.initdbFlags,
-            ], { ...permissionIds, env: { LC_MESSAGES: LC_MESSAGES_LOCALE } });
+        try {
+            await new Promise<void>((resolve, reject) => {
+                const childProcess = spawn(initdb, [
+                    `--pgdata=${this.options.databaseDir}`,
+                    `--auth=${this.options.authMethod}`,
+                    `--username=${this.options.user}`,
+                    `--pwfile=${passwordFile}`,
+                    `--lc-messages=${locale}`,
+                    ...this.options.initdbFlags,
+                ], {
+                    ...permissionIds,
+                    env: {
+                        ...process.env,
+                        LC_MESSAGES: locale,
+                    },
+                });
 
-            // Connect to stderr, as that is where the messages get sent
-            process.stderr?.on('data', (chunk: Buffer) => {
-                // Parse the data as a string and log it
-                const message = chunk.toString('utf-8');
-                this.options.onError(message); 
-            });
-      
-            process.stdout?.on('data', (chunk: Buffer) => {
-                // Parse the data as a string and log it
-                const message = chunk.toString('utf-8');
-                this.options.onLog(message); 
-            });
+                // Connect to stderr, as that is where the messages get sent
+                let stderrOutput = '';
+                childProcess.stdout?.on('data', (chunk: Buffer) => {
+                    const message = chunk.toString('utf-8');
+                    this.options.onLog(message);
+                });
 
-            process.on('exit', (code) => {
-                if (code === 0) {
-                    resolve();
-                } else {
-                    reject(`Postgres init script exited with code ${code}. Please check the logs for extra info. The data directory might already exist.`);
-                }
-            });
-        });
+                childProcess.stderr?.on('data', (chunk: Buffer) => {
+                    const message = chunk.toString('utf-8');
+                    stderrOutput += message;
+                    this.options.onLog(`[STDERR] ${message}`);
+                });
 
-        // Clean up the file
-        await fs.unlink(passwordFile);
+                childProcess.on('close', (code, signal) => {
+                    if (code === 0) {
+                        resolve();
+                    } else {
+                        reject(new Error(`Postgres init script failed (code: ${code ?? 'null'}, signal: ${signal ?? 'null'}). ERROR OUTPUT: ${stderrOutput}`));
+                    }
+                });
+            });
+        } finally {
+            // Clean up the file even when initdb fails
+            await fs.unlink(passwordFile).catch(() => undefined);
+        }
     }
 
     /**
@@ -181,6 +223,7 @@ class EmbeddedPostgres {
      */
     async start() {
         const { postgres } = await bin;
+        const locale = getBestLocale();
 
         // Optionally retrieve the uid and gid
         const permissionIds = await this.getUidAndGid()
@@ -188,8 +231,8 @@ class EmbeddedPostgres {
                 throw new Error('Postgres cannot run as a root user. embedded-postgres could not find a postgres user to run as instead. Consider using the `createPostgresUser` option.'); 
             });
 
-        // Greedily make the file executable, in case it is not
-        await fs.chmod(postgres, '755');
+        // Make the file executable, in case it is not
+        ensureBinIsExecutable(postgres);
 
         await new Promise<void>((resolve, reject) => {
             // Spawn a postgres server
@@ -199,7 +242,13 @@ class EmbeddedPostgres {
                 '-p',
                 this.options.port.toString(),
                 ...this.options.postgresFlags,
-            ], { ...permissionIds, env: { LC_MESSAGES: LC_MESSAGES_LOCALE } });
+            ], {
+                ...permissionIds,
+                env: {
+                    ...process.env,
+                    LC_MESSAGES: locale,
+                },
+            });
 
             // Connect to stderr, as that is where the messages get sent
             this.process.stdout?.on('data', (chunk: Buffer) => {

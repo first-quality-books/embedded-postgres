@@ -1,4 +1,211 @@
-# [1.0.0](https://github.com/leinelissen/embedded-postgres/compare/v17.2.0-beta.15...v1.0.0) (2024-12-04)
+# [1.0.0](https://github.com/leinelissen/embedded-postgres/compare/v18.3.0-beta.17...v1.0.0) (2026-04-17)
+
+
+
+# [18.3.0-beta.17](https://github.com/leinelissen/embedded-postgres/compare/v17.9.0-beta.17...v18.3.0-beta.17) (2026-04-17)
+
+
+
+# [17.9.0-beta.17](https://github.com/leinelissen/embedded-postgres/compare/v16.13.0-beta.17...v17.9.0-beta.17) (2026-04-17)
+
+
+
+# [16.13.0-beta.17](https://github.com/leinelissen/embedded-postgres/compare/v15.17.0-beta.17...v16.13.0-beta.17) (2026-04-17)
+
+
+
+# [15.17.0-beta.17](https://github.com/leinelissen/embedded-postgres/compare/v14.22.0-beta.17...v15.17.0-beta.17) (2026-04-17)
+
+
+
+# [14.22.0-beta.17](https://github.com/leinelissen/embedded-postgres/compare/v18.3.0-beta.16...v14.22.0-beta.17) (2026-04-17)
+
+
+### Bug Fixes
+
+* generate nl locale on ubuntu ([1203408](https://github.com/leinelissen/embedded-postgres/commit/12034083e42aeb8b7bb4467ba77ccbee321aa736))
+* harden locale detection and initdb process handling ([8f1b46d](https://github.com/leinelissen/embedded-postgres/commit/8f1b46db0aab916621e45d4ba1eb7d18688a33e3))
+* implement dynamic locale detection and enhance error logging ([106639b](https://github.com/leinelissen/embedded-postgres/commit/106639b3eab06a1f0c0f1344f0d6e3c7f66ba958))
+* test with valid non-english locale ([182b463](https://github.com/leinelissen/embedded-postgres/commit/182b4631ae045c41baa571bce8a9a3e44329e1f9))
+
+
+
+# [18.3.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v17.9.0-beta.16...v18.3.0-beta.16) (2026-03-03)
+
+
+
+# [17.9.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v16.13.0-beta.16...v17.9.0-beta.16) (2026-03-03)
+
+
+
+# [16.13.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v15.17.0-beta.16...v16.13.0-beta.16) (2026-03-03)
+
+
+
+# [15.17.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v14.22.0-beta.16...v15.17.0-beta.16) (2026-03-03)
+
+
+
+# [14.22.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v18.2.0-beta.16...v14.22.0-beta.16) (2026-03-03)
+
+
+
+# [18.2.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v17.8.0-beta.16...v18.2.0-beta.16) (2026-02-19)
+
+
+
+# [17.8.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v16.12.0-beta.16...v17.8.0-beta.16) (2026-02-19)
+
+
+
+# [16.12.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v15.16.0-beta.16...v16.12.0-beta.16) (2026-02-19)
+
+
+
+# [15.16.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v14.21.0-beta.16...v15.16.0-beta.16) (2026-02-19)
+
+
+
+# [14.21.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v18.1.0-beta.16...v14.21.0-beta.16) (2026-02-19)
+
+
+### Bug Fixes
+
+* redundant ignore ([9e066b5](https://github.com/leinelissen/embedded-postgres/commit/9e066b543def0546af6ae6e1b5b21f2fd2501eaf))
+* remove more redundant ignores ([c2561eb](https://github.com/leinelissen/embedded-postgres/commit/c2561eb169d7d0140fd016678aa8f34a2c96f847))
+* stop running CI on legacy macos ([b11fbfa](https://github.com/leinelissen/embedded-postgres/commit/b11fbfacc0f157d3c4e1fe33e3a4acfc21a6f5b2))
+
+
+
+# [18.1.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v17.7.0-beta.16...v18.1.0-beta.16) (2026-01-28)
+
+
+
+# [17.7.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v16.11.0-beta.16...v17.7.0-beta.16) (2026-01-28)
+
+
+
+# [16.11.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v15.15.0-beta.16...v16.11.0-beta.16) (2026-01-28)
+
+
+
+# [15.15.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v14.20.0-beta.16...v15.15.0-beta.16) (2026-01-28)
+
+
+
+# [14.20.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v13.23.0-beta.16...v14.20.0-beta.16) (2026-01-28)
+
+
+
+# [13.23.0-beta.16](https://github.com/leinelissen/embedded-postgres/compare/v18.1.0-beta.15...v13.23.0-beta.16) (2026-01-28)
+
+
+
+# [18.1.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v17.7.0-beta.15...v18.1.0-beta.15) (2025-11-17)
+
+
+
+# [17.7.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v16.11.0-beta.15...v17.7.0-beta.15) (2025-11-17)
+
+
+
+# [16.11.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v15.15.0-beta.15...v16.11.0-beta.15) (2025-11-17)
+
+
+
+# [15.15.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v14.20.0-beta.15...v15.15.0-beta.15) (2025-11-17)
+
+
+
+# [14.20.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v13.23.0-beta.15...v14.20.0-beta.15) (2025-11-17)
+
+
+
+# [13.23.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v18.0.0-beta.15...v13.23.0-beta.15) (2025-11-17)
+
+
+
+# [18.0.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v17.6.0-beta.15...v18.0.0-beta.15) (2025-11-10)
+
+
+
+# [17.6.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v16.10.0-beta.15...v17.6.0-beta.15) (2025-08-25)
+
+
+
+# [16.10.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v15.14.0-beta.15...v16.10.0-beta.15) (2025-08-25)
+
+
+
+# [15.14.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v14.19.0-beta.15...v15.14.0-beta.15) (2025-08-25)
+
+
+
+# [14.19.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v13.22.0-beta.15...v14.19.0-beta.15) (2025-08-25)
+
+
+
+# [13.22.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v17.5.0-beta.15...v13.22.0-beta.15) (2025-08-25)
+
+
+
+# [17.5.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v16.9.0-beta.15...v17.5.0-beta.15) (2025-05-23)
+
+
+
+# [16.9.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v15.13.0-beta.15...v16.9.0-beta.15) (2025-05-23)
+
+
+
+# [15.13.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v14.18.0-beta.15...v15.13.0-beta.15) (2025-05-23)
+
+
+
+# [14.18.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v13.21.0-beta.15...v14.18.0-beta.15) (2025-05-23)
+
+
+
+# [13.21.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v17.4.0-beta.15...v13.21.0-beta.15) (2025-05-23)
+
+
+
+# [17.4.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v16.8.0-beta.15...v17.4.0-beta.15) (2025-02-24)
+
+
+
+# [16.8.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v15.12.0-beta.15...v16.8.0-beta.15) (2025-02-24)
+
+
+
+# [15.12.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v14.17.0-beta.15...v15.12.0-beta.15) (2025-02-24)
+
+
+
+# [14.17.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v13.20.0-beta.15...v14.17.0-beta.15) (2025-02-24)
+
+
+
+# [13.20.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v17.3.0-beta.15...v13.20.0-beta.15) (2025-02-24)
+
+
+
+# [17.3.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v16.7.0-beta.15...v17.3.0-beta.15) (2025-02-24)
+
+
+
+# [16.7.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v15.11.0-beta.15...v16.7.0-beta.15) (2025-02-24)
+
+
+
+# [15.11.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v14.16.0-beta.15...v15.11.0-beta.15) (2025-02-24)
+
+
+
+# [14.16.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v13.19.0-beta.15...v14.16.0-beta.15) (2025-02-24)
+
+
+
+# [13.19.0-beta.15](https://github.com/leinelissen/embedded-postgres/compare/v17.2.0-beta.15...v13.19.0-beta.15) (2025-02-24)
 
 
 
