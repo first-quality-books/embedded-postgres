@@ -441,14 +441,19 @@ async function execAsync(command: string) {
  * nicely shutdown all potentially started clusters, and we don't end up with
  * zombie processes.
  */
-async function gracefulShutdown(done: () => void) {
+async function gracefulShutdown(done?: () => void) {
     // Loop through all instances, stop them, and await the response
     await Promise.all([...instances].map((instance) => {
         return instance.stop();
     }));
 
-    // Let NodeJS know we're done
-    done();
+    // `done` is only supplied on the exit paths that can still await us
+    // (`beforeExit`, signals). The `exit` event runs after the event loop has
+    // drained, so async-exit-hook calls this hook synchronously with no
+    // arguments — calling `done()` there throws a TypeError inside an async
+    // function, which surfaces as an unhandled rejection that buries whatever
+    // made the process exit in the first place.
+    done?.();
 }
 
 // Register graceful shutdown function
