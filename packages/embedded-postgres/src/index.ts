@@ -5,7 +5,7 @@ import { platform, tmpdir, userInfo } from 'os';
 import { ChildProcess, spawn, exec, execSync } from 'child_process';
 
 import pg from 'pg';
-import AsyncExitHook from 'async-exit-hook';
+import { asyncExitHook } from 'exit-hook';
 
 import getBinaries from './binary.js';
 import { PostgresOptions } from './types.js';
@@ -79,10 +79,53 @@ const ensureBinIsExecutable = async (filePath: string) => {
 };
 
 /**
- * This will track instances of all current initialised clusters. We need this
- * because we want to be able to shutdown any clusters when the script is exited.
+ * This will track every cluster with a live postmaster. We need this because we
+ * want to be able to shutdown any clusters when the script is exited.
  */
 const instances = new Set<EmbeddedPostgres>();
+
+/**
+ * How long the shutdown hook may take before `exit-hook` stops waiting and
+ * exits anyway. Matches the force-exit timeout we relied on previously.
+ */
+const SHUTDOWN_TIMEOUT = 10_000;
+
+/**
+ * Detaches the shutdown hook, for as long as one is attached.
+ */
+let removeShutdownHook: (() => void) | undefined;
+
+/**
+ * Starts tracking a running cluster, attaching the shutdown hook if this is the
+ * first one.
+ *
+ * The hook is attached per running cluster rather than once at import, because
+ * `exit-hook` prints a `SYNCHRONOUS TERMINATION NOTICE` on every explicit
+ * `process.exit()` for as long as an asynchronous hook is registered. That is
+ * accurate advice when a postmaster is about to be orphaned, and pure noise when
+ * every cluster has already been stopped, which is the normal case for an
+ * embedder that shuts down before exiting, such as an Electron app that calls
+ * `app.exit()` from its `will-quit` handler.
+ */
+function trackInstance(instance: EmbeddedPostgres) {
+    instances.add(instance);
+
+    if (!removeShutdownHook) {
+        removeShutdownHook = asyncExitHook(gracefulShutdown, { wait: SHUTDOWN_TIMEOUT });
+    }
+}
+
+/**
+ * Stops tracking a cluster, detaching the shutdown hook once none are left.
+ */
+function untrackInstance(instance: EmbeddedPostgres) {
+    instances.delete(instance);
+
+    if (instances.size === 0 && removeShutdownHook) {
+        removeShutdownHook();
+        removeShutdownHook = undefined;
+    }
+}
 
 /**
  * This class creates an instance from which a single Postgres cluster is
@@ -109,8 +152,6 @@ class EmbeddedPostgres {
 
         // Assign default options to options object
         this.options = Object.assign({}, defaults, legacyOptions, options);
-
-        instances.add(this);
 
         this.isRootUser = userInfo().uid === 0;
     }
@@ -250,6 +291,8 @@ class EmbeddedPostgres {
                 },
             });
 
+            trackInstance(this);
+
             // Connect to stderr, as that is where the messages get sent
             this.process.stdout?.on('data', (chunk: Buffer) => {
                 // Parse the data as a string and log it
@@ -277,6 +320,15 @@ class EmbeddedPostgres {
             this.process.on('close', () => {
                 reject();
             });
+        }).catch((error: unknown) => {
+            // The postmaster died on the way up, so there is nothing left to
+            // shut down. Leaving it tracked would hang `gracefulShutdown` for
+            // the full timeout, because `stop()` waits for an `exit` event that
+            // has already fired.
+            this.process = undefined;
+            untrackInstance(this);
+
+            throw error;
         });
     }
 
@@ -314,6 +366,7 @@ class EmbeddedPostgres {
 
         // Clean up process
         this.process = undefined;
+        untrackInstance(this);
 
         // GUARD: Additional work if database is not persistent
         if (this.options.persistent === false) {
@@ -441,23 +494,12 @@ async function execAsync(command: string) {
  * nicely shutdown all potentially started clusters, and we don't end up with
  * zombie processes.
  */
-async function gracefulShutdown(done?: () => void) {
+async function gracefulShutdown() {
     // Loop through all instances, stop them, and await the response
     await Promise.all([...instances].map((instance) => {
         return instance.stop();
     }));
-
-    // `done` is only supplied on the exit paths that can still await us
-    // (`beforeExit`, signals). The `exit` event runs after the event loop has
-    // drained, so async-exit-hook calls this hook synchronously with no
-    // arguments — calling `done()` there throws a TypeError inside an async
-    // function, which surfaces as an unhandled rejection that buries whatever
-    // made the process exit in the first place.
-    done?.();
 }
-
-// Register graceful shutdown function
-AsyncExitHook(gracefulShutdown);
 
 export type { PostgresOptions };
 export default EmbeddedPostgres;

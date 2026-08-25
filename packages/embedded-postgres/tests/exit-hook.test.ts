@@ -1,37 +1,22 @@
 import { it, expect, vi } from 'vitest';
 
-// Capture the hook that `src/index.ts` registers at import time, instead of
-// letting async-exit-hook wire it up to real process events.
-const { registered } = vi.hoisted(() => ({
-    registered: [] as Array<(done?: () => void) => unknown>,
+// Capture the registration `src/index.ts` performs, instead of letting
+// `exit-hook` wire itself up to real process events.
+const { asyncExitHook } = vi.hoisted(() => ({
+    asyncExitHook: vi.fn(() => vi.fn()),
 }));
 
-vi.mock('async-exit-hook', () => ({
-    default: (hook: (done?: () => void) => unknown) => {
-        registered.push(hook);
-    },
-}));
+vi.mock('exit-hook', () => ({ asyncExitHook }));
 
-it('registers a shutdown hook that async-exit-hook still treats as async', async () => {
-    await import('../src/index.js');
-    const hook = registered[0];
+it('registers no shutdown hook until a cluster is running', async () => {
+    const { default: EmbeddedPostgres } = await import('../src/index.js');
 
-    expect(hook).toBeTypeOf('function');
+    new EmbeddedPostgres({ databaseDir: '/tmp/embedded-postgres-never-started' });
 
-    // async-exit-hook decides sync vs. async off `hook.length`: on the signal
-    // paths it only passes a `done` callback (and waits for it) when the hook
-    // declares a parameter. Giving `done` a default value would silently drop
-    // arity to 0 and let the process exit before clusters are stopped.
-    expect(hook.length).toBe(1);
-});
-
-it('resolves when called with no callback, as the `exit` event does', async () => {
-    await import('../src/index.js');
-    const hook = registered[0];
-
-    // The plain `exit` event maps to `exit(false, undefined)`, so runHook takes
-    // the synchronous branch and invokes the hook with no arguments. Calling a
-    // missing `done()` there throws inside the async function and surfaces as an
-    // unhandled rejection on every process exit.
-    await expect(hook()).resolves.toBeUndefined();
+    // `exit-hook` prints a `SYNCHRONOUS TERMINATION NOTICE` on every explicit
+    // `process.exit()` for as long as an asynchronous hook is registered.
+    // Registering one at import time, or for a cluster that was never started,
+    // puts that warning on the exit of every process that so much as loads this
+    // module, and there is nothing it could usefully do about it.
+    expect(asyncExitHook).not.toHaveBeenCalled();
 });
